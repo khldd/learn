@@ -91,7 +91,7 @@ export default function UsersPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">Users</h1>
+          <h1 className="text-3xl font-bold font-graphica">Users</h1>
           <p className="text-gray-600 dark:text-gray-400 mt-2">Manage users and their roles across organizations.</p>
         </div>
         <Button onClick={() => setIsCreateModalOpen(true)}>

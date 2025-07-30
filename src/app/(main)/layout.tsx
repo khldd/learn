@@ -37,7 +37,15 @@ const navigation = [
   { name: "Enrollments", href: "/enrollments", icon: GraduationCap },
 ]
 
-function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+function Sidebar({
+  isOpen,
+  onClose,
+  darkMode,
+}: {
+  isOpen: boolean
+  onClose: () => void
+  darkMode: boolean
+}) {
   const pathname = usePathname()
 
   return (
@@ -54,7 +62,7 @@ function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) 
       >
         <div className="flex items-center justify-between h-16 px-6 border-b-2 border-primary/10">
           <div className="flex items-center space-x-3 fade-in">
-            <img src="/logo.png" alt="Learn" className="h-8 hover-lift" />
+            <img src={darkMode ? "/logoDark.png" : "/logo.png"} alt="Learn" className="h-8 hover-lift" />
             <div className="flex items-center">
               <Zap className="h-4 w-4 text-primary mr-1 icon-float" />
               <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Admin</span>
@@ -114,14 +122,16 @@ function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) 
   )
 }
 
-function TopBar({ onMenuClick }: { onMenuClick: () => void }) {
+function TopBar({
+  onMenuClick,
+  darkMode,
+  toggleDarkMode,
+}: {
+  onMenuClick: () => void
+  darkMode: boolean
+  toggleDarkMode: () => void
+}) {
   const { user, logout } = useAuth()
-  const [darkMode, setDarkMode] = useState(false)
-
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode)
-    document.documentElement.classList.toggle("dark")
-  }
 
   return (
     <header className="h-16 bg-card border-b-2 border-primary/10 flex items-center justify-between px-6 tech-grid slide-in-right">
@@ -189,13 +199,19 @@ function TopBar({ onMenuClick }: { onMenuClick: () => void }) {
 
 function MainLayoutContent({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [darkMode, setDarkMode] = useState(false)
+
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode)
+    document.documentElement.classList.toggle("dark")
+  }
 
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} darkMode={darkMode} />
 
       <div className="flex-1 flex flex-col overflow-hidden">
-        <TopBar onMenuClick={() => setSidebarOpen(true)} />
+        <TopBar onMenuClick={() => setSidebarOpen(true)} darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
 
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 dark:bg-gray-900 tech-grid">
           <div className="container mx-auto px-6 py-8 fade-in">{children}</div>

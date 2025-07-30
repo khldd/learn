@@ -38,7 +38,7 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8">
       <div className="fade-in">
-        <h1 className="text-3xl font-bold connected-accent">Dashboard</h1>
+        <h1 className="text-3xl font-bold connected-accent font-graphica">Dashboard</h1>
         <p className="text-gray-600 dark:text-gray-400 mt-2">
           Welcome back! Here's what's happening with your learning platform.
         </p>

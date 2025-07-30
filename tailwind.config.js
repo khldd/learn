@@ -88,6 +88,7 @@ module.exports = {
           "Noto Sans",
           "sans-serif",
         ],
+        graphica: ["TypoGraphica", "sans-serif"],
       },
       fontWeight: {
         normal: "400",
