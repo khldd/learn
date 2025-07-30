@@ -1,14 +1,13 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, Suspense } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { AuthProvider } from "@/context/AuthContext"
+import { AuthProvider, useAuth } from "@/context/AuthContext"
 import { QueryClientProvider } from "@tanstack/react-query"
 import { queryClient } from "@/lib/queryClient"
 import ProtectedRoute from "@/components/ProtectedRoute"
-import { useAuth } from "@/context/AuthContext"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import {
@@ -27,7 +26,6 @@ import {
   Zap,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { Suspense } from "react"
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -37,7 +35,8 @@ const navigation = [
   { name: "Enrollments", href: "/enrollments", icon: GraduationCap },
 ]
 
-function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+// Sidebar now accepts `darkMode` as a prop
+function Sidebar({ isOpen, onClose, darkMode }: { isOpen: boolean; onClose: () => void; darkMode: boolean }) {
   const pathname = usePathname()
 
   return (
@@ -54,7 +53,8 @@ function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) 
       >
         <div className="flex items-center justify-between h-16 px-6 border-b-2 border-primary/10">
           <div className="flex items-center space-x-3 fade-in">
-            <img src="/logo.png" alt="Learn" className="h-8 hover-lift" />
+            {/* Conditionally render logo based on darkMode prop */}
+            <img src={darkMode ? "/logoDark.png" : "/logo.png"} alt="Learn" className="h-8 hover-lift" />
             <div className="flex items-center">
               <Zap className="h-4 w-4 text-primary mr-1 icon-float" />
               <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Admin</span>
@@ -70,7 +70,7 @@ function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) 
 
         <nav className="mt-8 px-4">
           <ul className="space-y-1">
-            {navigation.map((item, index) => {
+            {navigation.map((item) => {
               const isActive = pathname === item.href
               return (
                 <li key={item.name} className="stagger-fade">
@@ -84,7 +84,6 @@ function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) 
                     )}
                     onClick={() => {
                       onClose()
-                      // Add micro bounce animation on click
                       const element = document.querySelector(`[href="${item.href}"]`)
                       element?.classList.add("micro-bounce")
                       setTimeout(() => element?.classList.remove("micro-bounce"), 400)
@@ -99,29 +98,22 @@ function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) 
             })}
           </ul>
         </nav>
-
-        <div className="absolute bottom-4 left-4 right-4 fade-in">
-          <div className="p-4 bg-primary/5 border border-primary/20 hover-lift glow-on-hover transition-all duration-300">
-            <div className="flex items-center space-x-2 mb-2">
-              <Zap className="h-4 w-4 text-primary icon-float" />
-              <span className="text-sm font-medium">Learning Analytics</span>
-            </div>
-            <p className="text-xs text-gray-600 dark:text-gray-400">Track progress and optimize learning outcomes</p>
-          </div>
-        </div>
       </div>
     </>
   )
 }
 
-function TopBar({ onMenuClick }: { onMenuClick: () => void }) {
+// TopBar accepts `darkMode` and `toggleDarkMode` as props
+function TopBar({
+  onMenuClick,
+  darkMode,
+  toggleDarkMode,
+}: {
+  onMenuClick: () => void
+  darkMode: boolean
+  toggleDarkMode: () => void
+}) {
   const { user, logout } = useAuth()
-  const [darkMode, setDarkMode] = useState(false)
-
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode)
-    document.documentElement.classList.toggle("dark")
-  }
 
   return (
     <header className="h-16 bg-card border-b-2 border-primary/10 flex items-center justify-between px-6 tech-grid slide-in-right">
@@ -132,31 +124,19 @@ function TopBar({ onMenuClick }: { onMenuClick: () => void }) {
         >
           <Menu className="h-5 w-5" />
         </button>
-
         <div className="flex items-center space-x-3 text-sm connected-accent">
           <span className="font-medium">Learning Management System</span>
         </div>
       </div>
 
       <div className="flex items-center space-x-4">
-        <div className="relative fade-in">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 transition-colors duration-200" />
-          <Input
-            type="text"
-            placeholder="Search..."
-            className="pl-10 w-64 border-primary/20 focus:border-primary transition-all duration-300 hover-lift"
-          />
-        </div>
-
         <Button variant="ghost" size="sm" onClick={toggleDarkMode} className="hover:bg-primary/10 hover-lift">
           {darkMode ? <Sun className="h-4 w-4 icon-float" /> : <Moon className="h-4 w-4 icon-float" />}
         </Button>
-
         <Button variant="ghost" size="sm" className="hover:bg-primary/10 relative hover-lift">
           <Bell className="h-4 w-4 icon-float" />
           <div className="absolute -top-1 -right-1 w-3 h-3 bg-accent animate-pulse"></div>
         </Button>
-
         <div className="flex items-center space-x-3 hover-lift">
           <div className="w-8 h-8 bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold relative glow-on-hover transition-all duration-300">
             {user?.firstName?.[0]}
@@ -173,7 +153,6 @@ function TopBar({ onMenuClick }: { onMenuClick: () => void }) {
             </div>
           </div>
         </div>
-
         <Button
           variant="ghost"
           size="sm"
@@ -189,13 +168,19 @@ function TopBar({ onMenuClick }: { onMenuClick: () => void }) {
 
 function MainLayoutContent({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [darkMode, setDarkMode] = useState(false)
+
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode)
+    document.documentElement.classList.toggle("dark")
+  }
 
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} darkMode={darkMode} />
 
       <div className="flex-1 flex flex-col overflow-hidden">
-        <TopBar onMenuClick={() => setSidebarOpen(true)} />
+        <TopBar onMenuClick={() => setSidebarOpen(true)} darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
 
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 dark:bg-gray-900 tech-grid">
           <div className="container mx-auto px-6 py-8 fade-in">{children}</div>
